@@ -111,6 +111,7 @@ def producer(cap, q, camera_index, outVideo, path1):
                 # print("camera {} ".format(camera_index) + str(a))
                 if(a > int(3000000)):
                     log.info("camera {}".format(camera_index) + " close")
+                    cap.release()
                     break
         except Exception as e:
             log.error("camera {}".format(camera_index) + ": " + str(e))
