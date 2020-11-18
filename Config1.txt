@@ -1,1 +1,0 @@
-{"path1":"/home/pi/Desktop/Videosave//","Day":"2","Delaytime":"0","Cameranumber":"2"}
