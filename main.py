@@ -104,48 +104,52 @@ def producer(cap, q, camera_index, outVideo, path1):
                             '%Y-%m-%d'))
                 except Exception as e:
                     log.error("camera {}".format(camera_index) + ": " + str(e))
+                   
         except Exception as e:
             log.error("camera {}".format(camera_index) + ": " + str(e))
+             
+
+def multithread_run(camera_index, path):
+    try:
+        initial_log(path)
+        if not os.path.exists(path + 'Video_{}//'.format(camera_index)):
+            os.makedirs(path + 'Video_{}//'.format(camera_index))
+        files = walk(path+'Video_{}//'.format(camera_index))
+        for i1 in files:
+            if not shouldkeep(i1):
+                # print(i1)
+                print(str(datetime.datetime.fromtimestamp(os.path.getmtime(i1))) + ' Video_{}'.format(camera_index))
+                os.remove(i1)
+
+        walk1(path+'Video_{}//'.format(camera_index))
+
+        cap = cv2.VideoCapture(int(camera_index))
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        print(fps)
+        cap.set(5, 30)
+        fourcc = cv2.VideoWriter_fourcc('h', '2', '6', '4')  # 'X', 'V', 'I', 'D', 'M', 'P', '4', '2'
+        print(path)
+
+        filename1 = datetime.datetime.today().strftime('%m-%d.%H')
+        outVideo = cv2.VideoWriter(path+'Video_{}//'.format(camera_index) + datetime.datetime.today().strftime('%Y-%m-%d') + '//' +
+                    filename1 +'.avi'.format(camera_index), fourcc, 30, (640, 480))
+        q = deque(maxlen=10)
+        print("index", camera_index)
 
 
-def multithread_run(camera_index):
-    initial_log()
-    if not os.path.exists(Config.path1 + 'Video_{}//'.format(camera_index)):
-        os.makedirs(Config.path1 + 'Video_{}//'.format(camera_index))
-    files = walk(Config.path1+'Video_{}//'.format(camera_index))
-    for i1 in files:
-        if not shouldkeep(i1):
-            # print(i1)
-            print(str(datetime.datetime.fromtimestamp(os.path.getmtime(i1))) + ' Video_{}'.format(camera_index))
-            os.remove(i1)
 
-    walk1(Config.path1+'Video_{}//'.format(camera_index))
+        # lock = threading.Lock()
+        p1 = Thread(target=producer, args=(cap, q, camera_index, outVideo, path))
+        # c1 = Thread(target=consumer, args=(camera_index, outVideo, q, Config.path1))
 
-    cap = cv2.VideoCapture(int(camera_index))
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    print(fps)
-    cap.set(5, 30)
-    fourcc = cv2.VideoWriter_fourcc('h', '2', '6', '4')  # 'X', 'V', 'I', 'D', 'M', 'P', '4', '2'
-    print(Config.path1)
+        p1.start()
+        # c1.start()
 
-    filename1 = datetime.datetime.today().strftime('%m-%d.%H')
-    outVideo = cv2.VideoWriter(Config.path1+'Video_{}//'.format(camera_index) + datetime.datetime.today().strftime('%Y-%m-%d') + '//' +
-                filename1 +'.avi'.format(camera_index), fourcc, 30, (640, 480))
-    q = deque(maxlen=10)
-    print("index", camera_index)
-
-
-
-    # lock = threading.Lock()
-    p1 = Thread(target=producer, args=(cap, q, camera_index, outVideo,  Config.path1))
-    # c1 = Thread(target=consumer, args=(camera_index, outVideo, q, Config.path1))
-
-    p1.start()
-    # c1.start()
-
-    p1.join()
+        p1.join()
+    except Exception as e:
+        log.error("camera {}".format(camera_index) + ": " + str(e))
     # c1.join()
 
 def walk(dir):
@@ -196,15 +200,15 @@ def shouldkeep(file):
   else:
     return False
 
-def initial_log():
+def initial_log(pathlog):
     global log
     log = logging.getLogger("Log")
     log.setLevel(logging.DEBUG)
-    if not os.path.exists(Config.path1 + "Log//"):
-        os.makedirs(Config.path1 + "Log//")
-        fileg = logging.FileHandler(Config.path1 + "Log//" + datetime.datetime.today().strftime('%Y-%m-%d.%H') + "-Log記錄")
+    if not os.path.exists(pathlog + "Log//"):
+        os.makedirs(pathlog + "Log//")
+        fileg = logging.FileHandler(pathlog + "Log//" + datetime.datetime.today().strftime('%Y-%m-%d.%H') + "-Log記錄")
     else:
-        fileg = logging.FileHandler(Config.path1 + "Log//" + datetime.datetime.today().strftime('%Y-%m-%d.%H') + "-Log記錄")
+        fileg = logging.FileHandler(pathlog + "Log//" + datetime.datetime.today().strftime('%Y-%m-%d.%H') + "-Log記錄")
     fileg.setLevel(logging.DEBUG)
     log_handler = logging.StreamHandler()
     log_handler.setLevel(logging.DEBUG)
@@ -227,7 +231,7 @@ if __name__ == "__main__":
         if i != 0:
             i = i*2
         print(i)
-        t = Process(target=multithread_run, args=(str(i)))
+        t = Process(target=multithread_run, args=(str(int(i)), Config.path1))
         print(i, t)
         processes.append(t)
 
