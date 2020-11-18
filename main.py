@@ -29,9 +29,11 @@ def producer(cap, q, camera_index, outVideo, path1):
     index = 0
     timelog = 0
     count = 0
+    a = 0
     while True:
         try:
             if cap.isOpened():
+                a = 0 
                 if index == 0:
                     index = index+1
                     log.info("camera {}".format(camera_index) + " Success")
@@ -104,10 +106,18 @@ def producer(cap, q, camera_index, outVideo, path1):
                             '%Y-%m-%d'))
                 except Exception as e:
                     log.error("camera {}".format(camera_index) + ": " + str(e))
-                   
+            else:
+                a = a + 1
+                # print("camera {} ".format(camera_index) + str(a))
+                if(a > int(3000000)):
+                    log.info("camera {}".format(camera_index) + " close")
+                    break
         except Exception as e:
             log.error("camera {}".format(camera_index) + ": " + str(e))
-             
+            # cap.release()
+            # cv2.destoryWindow("camera {}".format(camera_index))
+            # print("close " + "camera {}".format(camera_index))
+
 
 def multithread_run(camera_index, path):
     try:
@@ -217,7 +227,7 @@ def initial_log(pathlog):
     log_handler.setFormatter(formatter)
     log.addHandler(fileg)
     log.addHandler(log_handler)
-    log.info("Success")
+    #log.info("Success")
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
