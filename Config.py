@@ -6,7 +6,8 @@ Day = None
 Delaytime = None
 def Config():
     str = os.getcwd()
-    str += "/Config1.txt"
+    str += "/Config.json"
+    print("Success open Config.json")
     with open(str, 'r', encoding = 'utf-8') as f:
         global path1, Cameranumber, Day, Delaytime
         try:
